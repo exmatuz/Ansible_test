@@ -1,31 +1,53 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+Este role lo que hace es cambiar al clave root.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+El unico requerimiento es que sapan lo que estan haciendo.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Deben de crear un archivo en vars (roles/password/vars/root.yml) en donde archivaran la clave root en texto plano. Deben de tener claro que por propositos de entrenamiento este archivo no ha sido protegido con ansible-vault
+Vean el formato del mismo para un mejor entendimiento.
+Tambien lo puedes combinar con diferenctes entornos, ejemplo de esto seria:
+---
+password:
+  prod: 'PasswORD-AQUI'
+  qa1: 'AQUI-EL-PassworD'
+
+Y en el playbook, solo especificar de la siguiente forma:
+
+    password:        "{{ password[working_environment]|password_hash('md5') }}"
+
+Donde working_environment debe de estar declarado como variable global en sus archivos de inventario u otro lugar
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+No creo que exista alguna dependencia
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+---
+# Update a user password
+# Requires user_name as an extra var
+# example --extra-vars="user_name=svc_ansible"
+- hosts: all
+  name: Set user password
+  become: "{{ use_sudo|default(True) }}"
+  gather_facts: False
+  roles:
+    - password
+
+Single host deployment example
+------------------------------
+ansible-playbook password.yml --extra-vars="user_name=root" -l server_name 
 
 License
 -------
@@ -36,3 +58,4 @@ Author Information
 ------------------
 
 An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+
